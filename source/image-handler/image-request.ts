@@ -321,8 +321,8 @@ export class ImageRequest {
     const { path } = event;
     const matchDefault = /^(\/?)([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
     const matchThumbor1 = /^(\/?)((fit-in)?|(filters:.+\(.?\))?|(unsafe)?)/i;
-    const matchThumbor2 = /((.(?!(\.[^.\\/]+$)))*$)/i;
-    const matchThumbor3 = /.*(\.jpg$|\.jpeg$|.\.png$|\.webp$|\.tiff$|\.tif$|\.svg$|\.gif$)/i;
+    const matchThumbor2 = /((.(?!(\.[^.\\/]+$)))*$)/i; // NOSONAR
+    const matchThumbor3 = /.*(\.jpg$|\.jpeg$|.\.png$|\.webp$|\.tiff$|\.tif$|\.svg$|\.gif$)/i; // NOSONAR
     const { REWRITE_MATCH_PATTERN, REWRITE_SUBSTITUTION } = process.env;
     const definedEnvironmentVariables =
       REWRITE_MATCH_PATTERN !== "" &&
@@ -432,8 +432,9 @@ export class ImageRequest {
   public getOutputFormat(event: ImageHandlerEvent, requestType: RequestTypes = undefined): ImageFormatTypes {
     const { AUTO_WEBP } = process.env;
     const format = event.queryStringParameters?.format;
+    const accept = event.headers?.Accept || event.headers?.accept;
 
-    if ((AUTO_WEBP === "Yes" || format == "auto") && event.headers.Accept && event.headers.Accept.includes(ContentTypes.WEBP)) {
+    if ((AUTO_WEBP === "Yes" || format == "auto") && accept && accept.includes(ContentTypes.WEBP)) {
       return ImageFormatTypes.WEBP;
     } else if (requestType === RequestTypes.DEFAULT) {
       const decoded = this.decodeRequest(event);
@@ -458,6 +459,7 @@ export class ImageRequest {
       case "FFD8FFED":
       case "FFD8FFEE":
       case "FFD8FFE1":
+      case "FFD8FFE2":
         return ContentTypes.JPEG;
       case "52494646":
         return ContentTypes.WEBP;
